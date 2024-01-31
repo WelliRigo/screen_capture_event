@@ -44,12 +44,18 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
     private Handler handler;
     private boolean screenRecording = false;
     private long tempSize = 0;
+    private HandlerThread backgroundHandlerThread;
+    private Handler backgroundHandler;
 
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "screencapture_method");
         channel.setMethodCallHandler(this);
+
+        backgroundHandlerThread = new HandlerThread("ScreenCaptureBackgroundThread");
+        backgroundHandlerThread.start();
+        backgroundHandler = new Handler(backgroundHandlerThread.getLooper());
     }
 
 
@@ -72,8 +78,7 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
                 }
                 break;
             case "watch":
-                handler = new Handler(Looper.getMainLooper());
-                updateScreenRecordStatus();
+                backgroundHandler.post(this::updateScreenRecordStatus);
 
                 if (Build.VERSION.SDK_INT >= 29) {
                     final List<File> files = new ArrayList<>();
@@ -96,7 +101,7 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
                                                 setScreenRecordStatus(true);
                                                 updateScreenRecordStatus();
                                             } else if (mime.contains("image")) {
-                                                handler.post(() -> {
+                                                backgroundHandler.post(() -> {
                                                     channel.invokeMethod("screenshot", file.getPath());
                                                 });
                                             }
@@ -122,7 +127,7 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
                                                 setScreenRecordStatus(true);
                                                 updateScreenRecordStatus();
                                             } else if (mime.contains("image")) {
-                                                handler.post(() -> {
+                                                backgroundHandler.post(() -> {
                                                     channel.invokeMethod("screenshot", file.getPath());
                                                 });
                                             }
@@ -213,6 +218,9 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        if (backgroundHandlerThread != null) {
+            backgroundHandlerThread.quitSafely();
+        }
     }
 
 
