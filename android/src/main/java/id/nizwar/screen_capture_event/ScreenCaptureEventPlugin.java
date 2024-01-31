@@ -101,7 +101,7 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
                                                 setScreenRecordStatus(true);
                                                 updateScreenRecordStatus();
                                             } else if (mime.contains("image")) {
-                                                backgroundHandler.post(() -> {
+                                                handler.post(() -> {
                                                     channel.invokeMethod("screenshot", file.getPath());
                                                 });
                                             }
@@ -127,7 +127,7 @@ public class ScreenCaptureEventPlugin implements FlutterPlugin, MethodCallHandle
                                                 setScreenRecordStatus(true);
                                                 updateScreenRecordStatus();
                                             } else if (mime.contains("image")) {
-                                                backgroundHandler.post(() -> {
+                                                handler.post(() -> {
                                                     channel.invokeMethod("screenshot", file.getPath());
                                                 });
                                             }
