@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.FileObserver;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
